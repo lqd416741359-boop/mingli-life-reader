@@ -1,4 +1,11 @@
-# 命理解读师·生活版
+# 命理解读师·生活版 V2
+
+![命理解读师·生活版 V2 封面](assets/mingli-life-reader-v2-cover.png)
+
+![version](https://img.shields.io/badge/version-v2.0.0-8c3f2f)
+![type](https://img.shields.io/badge/type-Codex%20Skill-315f4c)
+![language](https://img.shields.io/badge/language-%E4%B8%AD%E6%96%87-b08a4d)
+![license](https://img.shields.io/badge/license-MIT-6b5238)
 
 一个面向普通读者的紫微斗数＋四柱八字综合报告 Skill。输入出生日期、时辰与性别后，可生成高对比度宣纸风 HTML 命盘，并由 Agent 进一步导出 PDF。
 
@@ -64,11 +71,23 @@ python scripts/calculate_chart.py \
   --output chart.json
 ```
 
-准备符合 [SKILL.md](SKILL.md) 结构的 `reading.json` 后生成 HTML：
+### 三步生成 V2 报告
+
+1. 用 `calculate_chart.py` 生成确定性的 `chart.json`。
+2. 参照 [references/reading_v2_example.json](references/reading_v2_example.json) 准备 `reading.json`。完整版固定包含一分钟总览、性格、事业、财运、感情、健康、贵人、大运、家庭、任职／创业／副业和生活指南。
+3. 运行生成器得到 HTML：
 
 ```bash
 python scripts/generate_html.py --chart chart.json --reading reading.json --output report.html
 ```
+
+V2 每章都按“核心结论 → 现实表现 → 优势 → 容易踩的坑 → 行动建议 → 专业依据”呈现。专业依据会区分紫微、八字以及两套体系的一致、互补或分歧。历史版本的 `cards` 数据仍可继续生成。
+
+### 导出 PDF
+
+用浏览器打开 `report.html`，按 `Ctrl+P` 进入打印，目标打印机选择“另存为 PDF”，纸张建议 A4，并开启“背景图形”。模板会保留淡黄色宣纸底色，并在打印时展开专业依据。
+
+如果要通过微信发送，优先发送导出的 PDF；HTML 更适合自己在电脑上继续查看。
 
 ### 时辰索引
 
@@ -84,7 +103,7 @@ python scripts/generate_html.py --chart chart.json --reading reading.json --outp
 
 ## 完整版报告
 
-默认可覆盖基础命盘、生肖纳音、日主与命格、性格天赋、事业学业、任职／副业／创业、财运、婚恋、父母子女、当前大运、贵人、身心生活方式、人生总结和生活指南。用户主动提出时，可增加称骨歌、三世书和手相文化观察。
+默认可覆盖基础命盘、生肖纳音、日主与命格，以及面向普通读者的十个生活主题。每章先回答现实问题，技术术语放在可展开的专业依据中。用户主动提出时，可增加称骨歌、三世书和手相文化观察。
 
 仓库内置 HTML 生成器。PDF 导出由运行 Skill 的 Agent 根据环境完成，推荐使用浏览器打印或 ReportLab，并在交付前逐页检查中文字体、分页和表格。
 
@@ -102,6 +121,7 @@ python scripts/generate_html.py --chart chart.json --reading reading.json --outp
 ```text
 mingli-life-reader/
 ├─ SKILL.md
+├─ assets/                  GitHub README 封面
 ├─ scripts/                 排盘、八字扩展、HTML 生成与安全过滤
 ├─ references/              星曜、四化、八字、完整版报告与三世书规范
 ├─ templates/               宣纸风 HTML 模板
@@ -112,7 +132,7 @@ mingli-life-reader/
 
 ## 隐私
 
-出生资料属于敏感个人信息。不要把真实命盘输入、生成的 `chart.json`、`reading.json`、HTML、PDF、照片或校准回答提交到公开仓库。建议在个人工作目录保存输入与输出，并在提交前检查 Git diff。
+出生资料属于敏感个人信息。不要把真实命主的生日、时辰、性别、地点、命盘输入、生成的 `chart.json`、`reading.json`、HTML、PDF、照片或校准回答提交到公开仓库。建议只在个人工作目录保存输入与输出，并在提交前检查 Git diff。
 
 ## 致谢与许可证
 

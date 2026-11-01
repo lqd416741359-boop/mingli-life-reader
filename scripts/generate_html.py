@@ -19,6 +19,13 @@ import json
 import os
 import sys
 
+from report_structure import (
+    CHAPTER_ORDER,
+    ReadingStructureError,
+    normalize_reading,
+    require_valid_v2_reading,
+)
+
 HOUR_NAMES_MAP = {
     0: '早子时', 1: '丑时', 2: '寅时', 3: '卯时',
     4: '辰时', 5: '巳时', 6: '午时', 7: '未时',
@@ -176,6 +183,45 @@ def build_reading_cards(reading):
     </div>''')
 
     return '\n    '.join(cards)
+
+
+def _escaped_list(items):
+    return ''.join(f'<li>{html.escape(str(item))}</li>' for item in items)
+
+
+def build_overview(overview):
+    """渲染 V2 一分钟摘要。"""
+    title = html.escape(str(overview.get('title') or '一分钟看懂'))
+    return f'''<section class="overview-panel">
+      <h2>{title}</h2>
+      <ul>{_escaped_list(overview.get('items', []))}</ul>
+    </section>'''
+
+
+def build_chapters(chapters):
+    """按固定顺序渲染 V2 十章，所有解读文字均作 HTML 转义。"""
+    rendered = []
+    for number, key in enumerate(CHAPTER_ORDER, 1):
+        chapter = chapters[key]
+        evidence = chapter.get('evidence', {})
+        if isinstance(evidence, dict):
+            evidence_html = ''.join(
+                f'<p><b>{html.escape(str(label))}：</b>{html.escape(str(value))}</p>'
+                for label, value in evidence.items()
+            )
+        else:
+            evidence_html = f'<p>{html.escape(str(evidence))}</p>'
+        rendered.append(f'''<article class="life-chapter" data-chapter="{key}">
+          <div class="chapter-number">{number:02d}</div>
+          <h2>{html.escape(str(chapter.get('title') or key))}</h2>
+          <p class="chapter-verdict">{html.escape(str(chapter['verdict']))}</p>
+          <h3>现实表现</h3><ul>{_escaped_list(chapter['manifestations'])}</ul>
+          <h3>优势与机会</h3><ul>{_escaped_list(chapter['strengths'])}</ul>
+          <h3>容易踩的坑</h3><ul>{_escaped_list(chapter['pitfalls'])}</ul>
+          <h3>可以怎么做</h3><ul>{_escaped_list(chapter['actions'])}</ul>
+          <details class="chapter-evidence"><summary>查看专业依据</summary>{evidence_html}</details>
+        </article>''')
+    return '\n'.join(rendered)
 
 
 def build_hand_section(hand_data):
@@ -462,6 +508,10 @@ def build_time_travel_card(tta):
 
 
 def generate_html(chart_data, reading_data, template_path):
+    reading_data = normalize_reading(reading_data)
+    if reading_data['format'] == 'v2':
+        require_valid_v2_reading(reading_data)
+
     with open(template_path, 'r', encoding='utf-8') as f:
         template = f.read()
 
@@ -508,10 +558,14 @@ def generate_html(chart_data, reading_data, template_path):
     if tta_card:
         cards_list.append(tta_card)
 
-    reading_data['cards'] = cards_list
-
-    # Build reading cards
-    reading_cards = build_reading_cards(reading_data)
+    if reading_data['format'] == 'v2':
+        reading_cards = build_overview(reading_data['overview'])
+        reading_cards += build_chapters(reading_data['chapters'])
+        if cards_list:
+            reading_cards += build_reading_cards({'cards': cards_list})
+    else:
+        reading_data['cards'] = cards_list
+        reading_cards = build_reading_cards(reading_data)
 
     # Build hand section
     hand_section = build_hand_section(reading_data.get('hand_reading'))
@@ -587,7 +641,10 @@ def main():
         template_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'chart_template.html')
         template_path = os.path.abspath(template_path)
 
-    html = generate_html(chart_data, reading_data, template_path)
+    try:
+        html = generate_html(chart_data, reading_data, template_path)
+    except ReadingStructureError as exc:
+        parser.error(str(exc))
 
     with open(args.output, 'w', encoding='utf-8') as f:
         f.write(html)

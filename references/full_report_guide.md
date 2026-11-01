@@ -2,6 +2,20 @@
 
 用户要求完整版时，按以下十章输出。每章把命理术语翻译成现实中的行为、选择与可验证问题；不为了篇幅重复同一结论。
 
+## V2 输出契约
+
+十章使用固定键：`personality`、`career`、`wealth`、`relationship`、`wellbeing`、`network`、`cycles`、`family`、`work_mode`、`lifestyle`。展示顺序由生成器固定，不用在标题中手工加入序号。
+
+每章依次写：`verdict` 核心判断、`manifestations` 现实表现、`strengths` 优势与机会、`pitfalls` 容易踩的坑、`actions` 行动建议、`evidence` 专业依据。不要把同一句话换词后填进六个位置。
+
+`evidence` 至少区分：
+
+- `ziwei`：宫位、星曜、四化、大限或流年的具体触发。
+- `bazi`：日主、月令、十神、旺衰、岁运或结构依据。
+- `relationship`：两套体系是一致、互补还是分歧。出现分歧时如实说明各自侧重，不强行合并成一个答案。
+
+先完成 4–6 条 `overview.items`，再写十章。摘要只放最重要的优势、课题、当前阶段和近期重点，不复制十章全文。
+
 ## 一、基础命盘解析
 
 - 四柱完整排盘、生肖、出生年干支与年柱纳音。

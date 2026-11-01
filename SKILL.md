@@ -1,6 +1,6 @@
 ---
 name: mingli-life-reader
-description: "生成面向普通人的紫微斗数＋四柱八字完整报告（HTML）。适用于排盘、生肖纳音、十神命格、性格天赋、事业创业、财运婚恋、亲子父母、贵人、流年大运、生活指南、称骨歌及三世书民俗阅读；强调确定性排盘、白话表达和非决定论边界。"
+description: "Use when 用户要求紫微斗数、四柱八字、命盘、运势、生辰分析、性格事业财运婚恋、流年大运、称骨歌或三世书民俗阅读，并希望得到普通人能看懂的 HTML/PDF 报告。"
 ---
 
 # 命理解读师·生活版
@@ -77,23 +77,40 @@ python scripts/calculate_chart.py --lunar 2001-02-20 --hour 6 --gender 女 --yea
 
 公开咨询资料中反复出现的高频主题包括：事业与转行、创业/合作、收入与投资纪律、婚恋与相处、年度节奏、外地/海外发展、学习考试、贵人与人际、父母家庭、住房与资产安排、身心压力、子女关系。不要为了“全面”把所有主题都写成同样长度；用户问什么就加深什么。
 
-## reading.json
+## reading.json V2
 
-沿用原版卡片结构：
+完整版默认使用 V2 结构。先写 `overview`，再按固定键生成十章：`personality`、`career`、`wealth`、`relationship`、`wellbeing`、`network`、`cycles`、`family`、`work_mode`、`lifestyle`。
+
+每章必须包含六个内容字段：
+
+- `verdict`：一句直接回答现实问题的核心判断。
+- `manifestations`：2–4 条可观察的现实表现。
+- `strengths`：优势与可利用条件。
+- `pitfalls`：容易消耗或误判的位置。
+- `actions`：2–4 条低风险、可执行建议。
+- `evidence`：分别写紫微依据、八字依据以及两者一致、互补或分歧之处。
+
+完整无个人资料示例见 [references/reading_v2_example.json](references/reading_v2_example.json)。生成器会拒绝缺章或留空的 V2 数据，不能为了通过校验编造结论。旧版 `cards` 仍可生成，用于兼容历史报告，不再作为新版完整版的推荐格式。
+
+简化结构如下：
 
 ```json
 {
+  "format_version": 2,
   "current_decadal_branch": "申",
   "current_decadal_display": "申宫·福德大限（26–35岁）",
-  "cards": [
-    {
-      "title": "一分钟看懂",
-      "badge": "核心关键词",
-      "full": true,
-      "highlight": true,
-      "body": "支持 <strong>、<em>、<span class='warn'>、<span class='good'> 与 <br>"
+  "overview": {"title": "一分钟看懂", "items": ["优势", "课题", "阶段", "重点"]},
+  "chapters": {
+    "personality": {
+      "title": "性格与天赋",
+      "verdict": "一句核心判断",
+      "manifestations": ["现实表现"],
+      "strengths": ["优势"],
+      "pitfalls": ["注意点"],
+      "actions": ["行动建议"],
+      "evidence": {"ziwei": "紫微依据", "bazi": "八字依据", "relationship": "两者关系"}
     }
-  ],
+  },
   "calibration_questions": [
     {"text": "用于核对现实经历的问题", "hint": "不要暗示标准答案"}
   ],
@@ -109,6 +126,8 @@ python scripts/calculate_chart.py --lunar 2001-02-20 --hour 6 --gender 女 --yea
 }
 ```
 
+公开 GitHub 包中的示例不得含真实命主的生日、时辰、性别、地点、命盘或报告；真实资料只放在使用者自己的工作目录和本地输出中。
+
 不要生成概率条。校准只能调整解释重点，不能声称把准确率提升到某个百分比。
 
 ## 生成报告
@@ -117,7 +136,7 @@ python scripts/calculate_chart.py --lunar 2001-02-20 --hour 6 --gender 女 --yea
 python scripts/generate_html.py --chart chart.json --reading reading.json --output report.html
 ```
 
-报告只保留高对比度“宣纸”主题，用 CSS 生成淡黄色旧纸纹理，不使用用户提供的带水印参考图，也不生成主题切换代码。四柱基础盘、大运流年小运、神煞、五行统计与称骨歌由生成器自动插入，解读卡片不需要重复抄表。
+报告只保留高对比度“宣纸”主题，用 CSS 生成淡黄色旧纸纹理，不使用用户提供的带水印参考图，也不生成主题切换代码。网页浏览和打印导出必须保持淡黄色底色，不得在 `@media print` 中强制改成白底。四柱基础盘、大运流年小运、神煞、五行统计与称骨歌由生成器自动插入，解读卡片不需要重复抄表。称骨歌必须显示与具体重量对应的“原句含义＋现代白话＋现实建议”，不能只输出一段适用于所有重量的通用免责声明；消极原句须改写为阶段性提醒，不得扩大成终身定论。
 
 ## 手相（可选）
 
